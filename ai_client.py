@@ -12,7 +12,7 @@ def get_book_category(book_name: str, max_retries: int = 3) -> str:
 请对下面的书名进行图书类型分类，只返回分类标签，不要多余解释。
 可选标签：悬疑、爱情、历史、科幻、文学、其他
 书名：{book_name}
-只输出标签名称。
+只输出标签名称
 """
     for attempt in range(max_retries):
         try:

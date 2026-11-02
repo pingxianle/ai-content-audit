@@ -8,7 +8,7 @@ def plot_category_chart(stats_df, save_path='ai_category_chart.png'):
     plt.figure(figsize=[8, 5])
     plt.bar(stats_df['违规状态'], stats_df['数量'], color='skyblue', edgecolor='black')
     plt.title('AI 违规状态数量统计', fontsize=12)
-    plt.xlabel('图书分类', fontsize=12)
+    plt.xlabel('违规分类', fontsize=12)
     plt.xticks(rotation=45)
     plt.ylabel('数量', fontsize=12)
 

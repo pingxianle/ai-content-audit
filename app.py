@@ -2,25 +2,114 @@ import streamlit as st
 from ai_client import get_text_violation_status
 import json
 import re
-# 大标题
+import os
+
+def save_history(record_dict):
+    """
+    保存历史记录到文件
+    :param record_dict: 包含新记录的字典, 格式为 {"text": "xxx", "result": "xxx"}
+    :return: None
+    """
+    file_path = "history.json"
+    history_list = []
+
+    if os.path.exists(file_path):
+        with open(file_path, "r", encoding="utf-8") as f:
+            history_list = json.load(f)
+    history_list.append(record_dict)
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(history_list, f, ensure_ascii=False, indent=4)
+
+def load_history():
+    """
+    从文件加载历史记录
+    :return: 包含历史记录的列表, 每个记录为一个字典，格式为 {"text": "xxx", "result": "xxx"}
+    """
+    file_path = "history.json"
+    if not os.path.exists(file_path):
+        return []
+    with open(file_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+# 设置页面配置项
+st.set_page_config(
+    page_title="AI 网络内容安全审核系统",
+    page_icon="🛡️",
+    layout="wide", # center中间区域 or wide 整个区域 or None
+    initial_sidebar_state="expanded", # 控制的是侧边栏的状态
+    menu_items={ } # 网页右上角菜单的跳转信息 字典可为空
+)
+
+# 网页主体界面
 st.title("🛡️ AI 网络内容安全审核系统")
+text_input = st.text_area("请输入需要审核的文本：", "加微信abc123456，带你炒股稳赚，内部消息！")
 
-# 输入框
-text_input = st.text_area("请输入需要审核的文本：", "加微信abc123456，带你炒股稳赚！")
-
-# 一个按钮
-if st.button("开始审核"):
-    if text_input:
-        with st.spinner("AI 正在分析中..."):
+if st.button("开始审核", type="primary"):
+    if text_input.strip() == "":
+        st.warning("请先输入文本！")
+    else:
+        with st.spinner("AI is analyzing..."):
             result_str = get_text_violation_status(text_input)
 
-            # 用你今天学到的正则防弹衣解析
             json_match = re.search(r'\{.*\}', result_str, re.DOTALL)
             if json_match:
-                result = json.loads(json_match.group())
-                st.success("审核完成！")
-                st.write(f"**判定结果：** {result.get('status')}")
-                st.write(f"**违规类型：** {result.get('type')}")
-                st.write(f"**判定理由：** {result.get('reason')}")
-            else:
-                st.error("AI 返回格式异常")
+                result_dict = json.loads(json_match.group())
+                status = result_dict.get('status', '未知')
+                v_type = result_dict.get('type', '未知')
+                reason = result_dict.get('reason', '未知')
+
+                if status == "正常":
+                    st.success("✅ 审核通过")
+                elif status == "违规":
+                    st.error("❌ 发现违规")
+                else:
+                    st.warning("⚠️ 无法确定")
+
+                # 把详情列出来
+                st.write(f"**判定结果：** {status}")
+                st.write(f"**违规类型：** {v_type}")
+                st.write(f"**判定理由：** {reason}")
+
+                record = {
+                    "文本": text_input,
+                    "状态": status,
+                    "类型": v_type,
+                    "理由": reason
+                }
+                save_history(record)
+
+# 配置侧边栏
+with st.sidebar:
+    st.header("📜 历史记录")
+    # 读取记录
+    read_records = load_history()
+
+    # 数据筛选菜单
+    option = st.selectbox(
+        "筛选状态",
+        ["全部", "正常", "违规", "不确定"],
+    )
+    all_data = read_records
+    filtered_data = []
+    if option == "全部":
+        filtered_data = all_data
+    elif option == "正常":
+        filtered_data = [item for item in all_data if item["状态"] == "正常"]
+    elif option == "违规":
+        filtered_data = [item for item in all_data if item["状态"] == "违规"]
+    elif option == "不确定":
+        filtered_data = [item for item in all_data if item["状态"] == "不确定"]
+
+    st.dataframe(filtered_data)
+    if not filtered_data:
+        st.info("暂无历史记录")
+
+    # 下载数据
+    if filtered_data:
+        json_string = json.dumps(filtered_data, ensure_ascii=False, indent=4)
+        st.download_button(
+            label="📥 下载历史数据",
+            data=json_string,
+            file_name="history.json",
+            mime="application/json",
+        )
