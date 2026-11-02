@@ -35,4 +35,6 @@
 4. Web 界面运行：
    - 运行 `streamlit run app.py`
 
+# ![系统运行截图](ui_screenshot.png)
+
 > 注：里面还留着一些之前测试书籍分类的代码和垃圾数据，懒得删了。
