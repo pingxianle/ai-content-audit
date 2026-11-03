@@ -1,8 +1,8 @@
 import streamlit as st
-from ai_client import get_text_violation_status
 import json
-import re
 import os
+import requests
+
 
 def save_history(record_dict):
     """
@@ -49,11 +49,10 @@ if st.button("开始审核", type="primary"):
         st.warning("请先输入文本！")
     else:
         with st.spinner("AI is analyzing..."):
-            result_str = get_text_violation_status(text_input)
+            r = requests.post('http://127.0.0.1:8000/audit', json={'text': text_input})
 
-            json_match = re.search(r'\{.*\}', result_str, re.DOTALL)
-            if json_match:
-                result_dict = json.loads(json_match.group())
+            if r.status_code == 200:
+                result_dict = r.json()
                 status = result_dict.get('status', '未知')
                 v_type = result_dict.get('type', '未知')
                 reason = result_dict.get('reason', '未知')
@@ -77,6 +76,8 @@ if st.button("开始审核", type="primary"):
                     "理由": reason
                 }
                 save_history(record)
+            else:
+                st.error("服务器连不上了，请检查 server.py 是否在运行！")
 
 # 配置侧边栏
 with st.sidebar:
