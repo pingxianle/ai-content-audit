@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from ai_client import get_text_violation_status
 import json
 import re
@@ -15,7 +15,8 @@ app.add_middleware(
 )
 
 class Item(BaseModel):
-    text: str
+    model_config = {"strict": True}
+    text: str = Field(min_length=1, max_length=500)
 
 # @app.get("/")
 # def read_root():
