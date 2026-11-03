@@ -1,35 +1,34 @@
 import streamlit as st
-import json
-import os
 import requests
+import json
 
 
-def save_history(record_dict):
-    """
-    保存历史记录到文件
-    :param record_dict: 包含新记录的字典, 格式为 {"text": "xxx", "result": "xxx"}
-    :return: None
-    """
-    file_path = "history.json"
-    history_list = []
+# def save_history(record_dict):
+#     """
+#     保存历史记录到文件
+#     :param record_dict: 包含新记录的字典, 格式为 {"text": "xxx", "result": "xxx"}
+#     :return: None
+#     """
+#     file_path = "history.json"
+#     history_list = []
+#
+#     if os.path.exists(file_path):
+#         with open(file_path, "r", encoding="utf-8") as f:
+#             history_list = json.load(f)
+#     history_list.append(record_dict)
+#     with open(file_path, "w", encoding="utf-8") as f:
+#         json.dump(history_list, f, ensure_ascii=False, indent=4)
 
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            history_list = json.load(f)
-    history_list.append(record_dict)
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(history_list, f, ensure_ascii=False, indent=4)
-
-def load_history():
-    """
-    从文件加载历史记录
-    :return: 包含历史记录的列表, 每个记录为一个字典，格式为 {"text": "xxx", "result": "xxx"}
-    """
-    file_path = "history.json"
-    if not os.path.exists(file_path):
-        return []
-    with open(file_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+# def load_history():
+#     """
+#     从文件加载历史记录
+#     :return: 包含历史记录的列表, 每个记录为一个字典，格式为 {"text": "xxx", "result": "xxx"}
+#     """
+#     file_path = "history.json"
+#     if not os.path.exists(file_path):
+#         return []
+#     with open(file_path, "r", encoding="utf-8") as f:
+#         return json.load(f)
 
 # 设置页面配置项
 st.set_page_config(
@@ -49,41 +48,46 @@ if st.button("开始审核", type="primary"):
         st.warning("请先输入文本！")
     else:
         with st.spinner("AI is analyzing..."):
-            r = requests.post('http://127.0.0.1:8000/audit', json={'text': text_input})
+            try:
+                r = requests.post('http://127.0.0.1:8000/audit', json={'text': text_input})
 
-            if r.status_code == 200:
-                result_dict = r.json()
-                status = result_dict.get('status', '未知')
-                v_type = result_dict.get('type', '未知')
-                reason = result_dict.get('reason', '未知')
+                if r.status_code == 200:
+                    result_dict = r.json()
+                    status = result_dict.get('status', '未知')
+                    v_type = result_dict.get('type', '未知')
+                    reason = result_dict.get('reason', '未知')
 
-                if status == "正常":
-                    st.success("✅ 审核通过")
-                elif status == "违规":
-                    st.error("❌ 发现违规")
+                    if status == "正常":
+                        st.success("✅ 审核通过")
+                    elif status == "违规":
+                        st.error("❌ 发现违规")
+                    else:
+                        st.warning("⚠️ 无法确定")
+
+                    st.write(f"**判定结果：** {status}")
+                    st.write(f"**违规类型：** {v_type}")
+                    st.write(f"**判定理由：** {reason}")
                 else:
-                    st.warning("⚠️ 无法确定")
-
-                # 把详情列出来
-                st.write(f"**判定结果：** {status}")
-                st.write(f"**违规类型：** {v_type}")
-                st.write(f"**判定理由：** {reason}")
-
-                record = {
-                    "文本": text_input,
-                    "状态": status,
-                    "类型": v_type,
-                    "理由": reason
-                }
-                save_history(record)
-            else:
-                st.error("服务器连不上了，请检查 server.py 是否在运行！")
+                    st.error("后端返回错误，状态码非 200")
+            except requests.exceptions.ConnectionError:
+                st.error("连不上后端！请检查 server.py 终端是否在运行。")
 
 # 配置侧边栏
 with st.sidebar:
     st.header("📜 历史记录")
-    # 读取记录
-    read_records = load_history()
+
+    # 向数据库发送请求读取数据记录
+    try:
+        response = requests.get('http://127.0.0.1:8000/history')
+
+        if response.status_code == 200:
+            read_records = response.json()
+        else:
+            st.error("获取历史记录失败，请检查后端是否启动")
+            read_records = []
+    except requests.exceptions.ConnectionError:
+        st.error("无法连接后端，历史记录加载失败")
+        read_records = []
 
     # 数据筛选菜单
     option = st.selectbox(

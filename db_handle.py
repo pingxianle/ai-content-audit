@@ -5,7 +5,7 @@ import pandas as pd
 def save_df_to_db(df, db_path, table_name):
     """将DataFrame存入SQLite"""
     conn = sqlite3.connect(db_path)
-    df.to_sql(table_name, conn, if_exists='replace', index=False)
+    df.to_sql(table_name, conn, if_exists='append', index=False)
     conn.close()
     print(f"数据已成功写入数据库：{table_name} 表")
 
