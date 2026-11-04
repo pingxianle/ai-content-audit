@@ -120,3 +120,5 @@ with st.sidebar:
             file_name="history.json",
             mime="application/json",
         )
+
+# streamlit run app.py  main

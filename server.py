@@ -30,7 +30,7 @@ def get_history():
     df = query_table(DB_PATH,"SELECT 文本, 违规状态 AS 状态, 违规类型 AS 类型, 判定理由 AS 理由 FROM comment_audits")
     return df.to_dict(orient="records")
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("API_SECRET_KEY")
 
 def verify_token(authorization: str = Header(None)):
     if authorization != SECRET_KEY:
@@ -58,3 +58,4 @@ def create_item(item: Item, token: str = Depends(verify_token)):
         return clean_dict
     return {"status": "解析失败", "reason": result}
 
+# fastapi dev server.py   main
