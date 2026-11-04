@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import json
+import os
 
 
 # def save_history(record_dict):
@@ -49,7 +50,8 @@ if st.button("开始审核", type="primary"):
     else:
         with st.spinner("AI is analyzing..."):
             try:
-                r = requests.post('http://127.0.0.1:8000/audit', json={'text': text_input})
+                my_headers = {"Authorization": os.getenv("API_SECRET_KEY")}
+                r = requests.post('http://127.0.0.1:8000/audit', json={'text': text_input}, headers=my_headers)
 
                 if r.status_code == 200:
                     result_dict = r.json()

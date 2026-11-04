@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException, status, Depends
 from pydantic import BaseModel,Field
 from ai_client import get_text_violation_status
 import json
@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from db_handle import save_df_to_db,query_table
 import pandas
 from config import DB_PATH
-
+import os
 
 app = FastAPI()
 app.add_middleware(
@@ -30,8 +30,18 @@ def get_history():
     df = query_table(DB_PATH,"SELECT 文本, 违规状态 AS 状态, 违规类型 AS 类型, 判定理由 AS 理由 FROM comment_audits")
     return df.to_dict(orient="records")
 
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+def verify_token(authorization: str = Header(None)):
+    if authorization != SECRET_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="暗号不对，拒绝访问！"
+        )
+    return authorization
+
 @app.post("/audit")
-def create_item(item: Item):
+def create_item(item: Item, token: str = Depends(verify_token)):
     result = get_text_violation_status(item.text)
 
     json_match = re.search(r'\{.*\}', result, re.DOTALL)
