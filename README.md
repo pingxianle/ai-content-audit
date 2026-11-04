@@ -6,7 +6,7 @@
 ## 架构说明：
 前端：Streamlit 交互界面（app.py）
 后端：FastAPI 接口服务（server.py）
-数据流：前端发请求 -> 后端调智谱 AI 并清洗 JSON -> 前端接收并持久化到本地。
+数据流：前端发请求 -> 后端调智谱 AI 并清洗 JSON -> 后端存入 SQLite 数据库 -> 前端获取并展示历史记录
 
 ## 用到了啥
 - Python, Pandas
@@ -34,12 +34,16 @@
 ## 怎么跑
 1. 安装依赖（一键安装所有需要的库）：
    `pip install -r requirements.txt`
-2. 配置好环境变量 `ZHIPU_API_KEY`。
-3. 先启动后端服务：
-   `fastapi dev server.py`
-4. 再启动前端页面：
-   `streamlit run app.py`
+2. 在根目录创建 `.env` 文件，并填入你的 API Key 和鉴权密码：
+   ```text
+   ZHIPU_API_KEY=你的智谱Key
+   API_SECRET_KEY=Bearer LOVE DeepSeek
+3.先启动后端服务：
+  fastapi dev server.py
 
-# ![系统运行截图](ui_screenshot.png)
+4.再启动前端页面：
+ streamlit run app.py
+
+https://ui_screenshot.png/
 
 > 注：里面还留着一些之前测试书籍分类的代码和垃圾数据，懒得删了。

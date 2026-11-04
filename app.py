@@ -2,6 +2,8 @@ import streamlit as st
 import requests
 import json
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # def save_history(record_dict):
@@ -70,7 +72,7 @@ if st.button("开始审核", type="primary"):
                     st.write(f"**违规类型：** {v_type}")
                     st.write(f"**判定理由：** {reason}")
                 else:
-                    st.error("后端返回错误，状态码非 200")
+                    st.error(f"后端返回错误，状态码: {r.status_code}，详情: {r.text}")
             except requests.exceptions.ConnectionError:
                 st.error("连不上后端！请检查 server.py 终端是否在运行。")
 
