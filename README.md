@@ -32,13 +32,13 @@
 - **`app.py`: 基于 Streamlit 的 Web 交互界面**
 
 ## 怎么跑
-1. 安装依赖：`pip install pandas openai matplotlib streamlit`
-2. 在系统里配好环境变量 `ZHIPU_API_KEY`
-3. 批量脚本运行：
-   - 准备个 `comments.csv`（表头叫“文本”）
-   - 运行 `python main.py`
-4. Web 界面运行：
-   - 运行 `streamlit run app.py`
+1. 安装依赖（一键安装所有需要的库）：
+   `pip install -r requirements.txt`
+2. 配置好环境变量 `ZHIPU_API_KEY`。
+3. 先启动后端服务：
+   `fastapi dev server.py`
+4. 再启动前端页面：
+   `streamlit run app.py`
 
 # ![系统运行截图](ui_screenshot.png)
 
