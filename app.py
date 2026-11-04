@@ -121,4 +121,4 @@ with st.sidebar:
             mime="application/json",
         )
 
-# streamlit run app.py  main
+# streamlit run app.py
