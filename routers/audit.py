@@ -8,8 +8,11 @@ import re
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from config import DB_PATH
 from db_handle import save_df_to_db
-import logger_config
 import logging
+from limiter import limiter
+from fastapi import APIRouter, Depends, Header, HTTPException, status, Request
+
+
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -31,7 +34,8 @@ def verify_token(authorization: str = Header(None)):
     return authorization
 
 @router.post("/audit")
-def create_item(item: Item, token: str = Depends(verify_token)):
+@limiter.limit("6/minute")
+def create_item(request: Request, item: Item, token: str = Depends(verify_token)):
     logger.info(f"收到审核请求，文本长度：{len(item.text)}")
     result = get_text_violation_status(item.text)
 
