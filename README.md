@@ -35,7 +35,7 @@
 ## 怎么跑
 1. 安装依赖（一键安装所有需要的库）：
    `pip install -r requirements.txt`
-2. 在根目录创建 `.env` 文件，并填入你的 API Key 和鉴权密码：
+2. 在根目录创建 `../.env` 文件，并填入你的 API Key 和鉴权密码：
    ```text
    ZHIPU_API_KEY=你的智谱Key
    API_SECRET_KEY=Bearer LOVE DeepSeek
