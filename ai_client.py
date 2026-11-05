@@ -2,6 +2,9 @@
 import os
 import time
 from openai import OpenAI
+from dotenv import load_dotenv
+load_dotenv()
+
 
 api_key = os.getenv('ZHIPU_API_KEY')
 client = OpenAI(api_key=api_key, base_url="https://open.bigmodel.cn/api/paas/v4/")

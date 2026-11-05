@@ -1,13 +1,14 @@
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers.audit import router as audit_router
 from routers.history import router as history_router
-from dotenv import load_dotenv
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from limiter import limiter
 
-load_dotenv()
+
 app = FastAPI()
 
 app.state.limiter = limiter
