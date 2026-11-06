@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import json
+import time
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -46,14 +47,21 @@ st.set_page_config(
 st.title("🛡️ AI 网络内容安全审核系统")
 text_input = st.text_area("请输入需要审核的文本：", "加微信abc123456，带你炒股稳赚，内部消息！")
 
+# 生成页面加载时间戳
+if "page_load_time" not in st.session_state:
+    st.session_state.page_load_time = time.time()
+
 if st.button("开始审核", type="primary"):
     if text_input.strip() == "":
         st.warning("请先输入文本！")
     else:
         with st.spinner("AI is analyzing..."):
             try:
-                my_headers = {"Authorization": os.getenv("API_SECRET_KEY")}
-                r = requests.post('http://127.0.0.1:8000/audit', json={'text': text_input}, headers=my_headers)
+                my_headers = {
+                    "Authorization": os.getenv("API_SECRET_KEY"),
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+                r = requests.post('http://127.0.0.1:8000/audit', json={'text': text_input, 'timestamp': st.session_state.page_load_time}, headers=my_headers)
 
                 if r.status_code == 200:
                     result_dict = r.json()
